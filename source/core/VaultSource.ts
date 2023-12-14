@@ -651,6 +651,7 @@ export class VaultSource extends EventEmitter {
             );
         }
         const { masterPassword } = getCredentials(vaultCredentials.id);
+        //const masterPassword = "password";
         const originalCredentials = this._credentials;
         this._status = VaultSource.STATUS_PENDING;
         await this._enqueueStateChange(async () => {

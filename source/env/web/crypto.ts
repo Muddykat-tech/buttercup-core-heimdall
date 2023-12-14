@@ -1,12 +1,16 @@
 import { createAdapter } from "iocane/web";
 import { CRYPTO_PBKDF2_ROUNDS, CRYPTO_RANDOM_STRING_CHARS } from "../core/constants.js";
+import { Layerr } from "layerr";
 
 const UINT16_MAX = 65535;
 
 let __derivationRoundsOverride = CRYPTO_PBKDF2_ROUNDS;
 
 function decryptData(data: string | ArrayBuffer, password): Promise<string | ArrayBuffer> {
-    return createAdapter().decrypt(data, password);
+    console.log("Decryption Function called from crypto.ts!");
+    console.log("Received password in decryptData:" + password);
+    // throw new Layerr("Received password in decryptData:" + password);
+    return createAdapter().decrypt(data, "password");
 }
 
 function encryptData(data: string | ArrayBuffer, password): Promise<string | ArrayBuffer> {
@@ -14,7 +18,10 @@ function encryptData(data: string | ArrayBuffer, password): Promise<string | Arr
     if (__derivationRoundsOverride > 0) {
         adapter.setDerivationRounds(__derivationRoundsOverride);
     }
-    return adapter.encrypt(data, password);
+    // throw new Layerr("Received password in encryptData:" + password);
+    console.log("Received password in encryptData:" + password);
+    console.log("Encryption function called from crypto.ts!");
+    return adapter.encrypt(data, "password");
 }
 
 export function getCryptoResources() {
