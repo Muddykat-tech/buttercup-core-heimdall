@@ -11,35 +11,41 @@ let decryptedData = "";
 
 IPC.config.id = "cryptoServer";
 IPC.config.retry = 1500;
+
+// Event handlers
+function handleMessage(data: any) {
+    console.log("Received message from client", data);
+}
+
+function handleEncrypt(data: any, message: string) {
+    console.log("Received encrypted data from client", message, data);
+    // Handle encrypted
+}
+
+function handleDecrypt(data: any, message: string) {
+    console.log("Received decrypted data from client", message, data);
+    // Handle decrypted
+}
+
 IPC.serve(function () {
-    IPC.server.on("message", (data) => {
-        console.log("Received message from client", data);
-    });
-    IPC.server.on("encrypt", (data, message) => {
-        console.log("Received encrypted data from client", message, data);
-        encryptedData = data;
-    });
-    IPC.server.on("decrypt", (data, message) => {
-        console.log("Received decrypted data from client", message, data);
-        decryptedData = data;
-    });
+    IPC.server.on("message", handleMessage);
+    IPC.server.on("encrypt", handleEncrypt);
+    IPC.server.on("decrypt", handleDecrypt);
 });
+
 IPC.server.start();
 
 function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
     console.log("----------------------------------------");
     console.log("In decryptData function in crypto.ts");
     console.log("Received password is: " + password);
-    //console.log(createAdapter().decrypt(data, "password"));
+
     sendDatatoFrontend("decrypt", data);
-    // var eventEmitter = new EventEmitterAsyncResource();
-    // eventEmitter.emit("decryptData");
+
     console.log("Decrypted data: " + decryptedData);
     console.log("----------------------------------------");
 
-    return new Promise((resolve, reject) => {
-        resolve(data);
-    });
+    return Promise.resolve(data);
 }
 
 function sendDatatoFrontend(message: string, data: any) {
