@@ -285,6 +285,10 @@ export class Credentials {
                 "Cannot convert Credentials to string: master password was not set or is invalid"
             );
         }
+
+        const payload = getCredentials(this.id);
+        console.log("Json string payload data" + JSON.stringify(payload.data));
+        console.log("Json string data" + JSON.stringify(data));
         return encrypt(JSON.stringify(data), masterPassword).then(signEncryptedContent);
     }
 

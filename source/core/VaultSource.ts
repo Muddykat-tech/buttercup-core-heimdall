@@ -479,6 +479,8 @@ export class VaultSource extends EventEmitter {
             const currentAttachmentMgr = this._attachmentManager;
             try {
                 const credentialsStr = await (<Credentials>this._credentials).toSecureString();
+                console.log("Credentials string " + this._credentials);
+                console.log("Vault settings: " + currentVault.getAllEntries());
                 this._credentials = credentialsStr;
                 this._datasource = null;
                 this._vault = null;
@@ -665,8 +667,10 @@ export class VaultSource extends EventEmitter {
             ));
             datasource.sourceID = this.id;
             if (typeof offlineContent === "string") {
+                console.log("Offline content: " + offlineContent);
                 datasource.setContent(offlineContent);
             }
+
             // Listen for datasource updates
             datasource.on("updated", () => {
                 this._waitNonPending()

@@ -26,45 +26,59 @@ IPC.serve(function () {
 });
 IPC.server.start();
 
-function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
+async function sendDatatoFrontend(message: string, data: any) {
+    IPC.server.broadcast(message, data);
+    let returnData = "";
+    await IPC.server.on("encrypt", (data, message) => {
+        console.log("Received encrypted data from client", data);
+        encryptedData = data;
+        returnData = encryptedData;
+    });
+    await IPC.server.on("decrypt", (data, message) => {
+        console.log("Received decrypted data from client", data);
+        decryptedData = data;
+        returnData = decryptedData;
+    });
+
+    return returnData;
+}
+
+async function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
     console.log("----------------------------------------");
     console.log("In decryptData function in crypto.ts");
     console.log("Received password is: " + password);
-    //console.log(createAdapter().decrypt(data, "password"));
-    sendDatatoFrontend("decrypt", data);
-    // var eventEmitter = new EventEmitterAsyncResource();
-    // eventEmitter.emit("decryptData");
+
+    let value = await sendDatatoFrontend("decrypt", data);
     console.log("Decrypted data: " + decryptedData);
+    console.log("Decrypted data - value: " + value);
     console.log("----------------------------------------");
+    //return value as Promise<string | Buffer>;
 
     return new Promise((resolve, reject) => {
         resolve(data);
     });
+    // console.log("iocane value" , createAdapter().decrypt(data, password) as Promise<string | Buffer>);
+    // return createAdapter().decrypt(data, '123') as Promise<string | Buffer>;
 }
 
-function sendDatatoFrontend(message: string, data: any) {
-    IPC.server.broadcast(message, data);
-}
+async function encryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
+    console.log("----------------------------------------");
+    console.log("In encryptData function in crypto.ts");
+    console.log("Received password is: " + password);
 
-function encryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
+    let value = sendDatatoFrontend("encrypt", data);
+    console.log("Encrypted data: " + encryptedData);
+    console.log("Encrypted data - value: " + value);
+    console.log("----------------------------------------");
+    //return value as Promise<string | Buffer>;
+
     // const adapter = createAdapter();
     // if (__derivationRoundsOverride > 0) {
     //     adapter.setDerivationRounds(__derivationRoundsOverride);
     // }
-    console.log("----------------------------------------");
-    console.log("In encryptData function in crypto.ts");
-    console.log("Received password is: " + password);
-    //var eventEmitter = new EventEmitterAsyncResource();
-    // eventEmitter.emit("encryptData");
-    //console.log(adapter.encrypt(data, "password"));
-    // IPC.serve(() => IPC.server.on('heimdall-event', (data, socket) => {
-    //     console.log(data);
-    //     IPC.server.emit(socket, 'heimdall-response', data);
-    // }));
-    // IPC.server.start();
-    sendDatatoFrontend("encrypt", data);
-    console.log("Encrypted data: " + encryptedData);
-    console.log("----------------------------------------");
+    // console.log("iocane value", adapter.encrypt(data, password) as Promise<string | Buffer>);
+    // return adapter.encrypt(data, password) as Promise<string | Buffer>;
+
     return new Promise((resolve, reject) => {
         resolve(data);
     });
