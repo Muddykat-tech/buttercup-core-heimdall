@@ -35,42 +35,31 @@ IPC.serve(function () {
 
 IPC.server.start();
 
-async function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
+function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
     console.log("----------------------------------------");
     console.log("In decryptData function in crypto.ts");
-    console.log("Received password is: " + password);
 
     sendDatatoFrontend("decrypt", data);
 
-    console.log("Decrypted data: " + decryptedData);
-    //console.log("Decrypted data - value: " + value);
+    console.log("Decrypted data: " + data);
     console.log("----------------------------------------");
-    //return value as Promise<string | Buffer>;
 
-    return Promise.resolve(data);
+    return new Promise((resolve, reject) => {
+        resolve(data);
+    });
 }
 
 function sendDatatoFrontend(message: string, data: any) {
     IPC.server.broadcast(message, data);
 }
 
-async function encryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
+function encryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
     console.log("----------------------------------------");
     console.log("In encryptData function in crypto.ts");
-    console.log("Received password is: " + password);
 
-    let value = sendDatatoFrontend("encrypt", data);
-    console.log("Encrypted data: " + encryptedData);
-    console.log("Encrypted data - value: " + value);
+    sendDatatoFrontend("encrypt", data);
+    console.log("Encrypted data: " + data);
     console.log("----------------------------------------");
-    //return value as Promise<string | Buffer>;
-
-    // const adapter = createAdapter();
-    // if (__derivationRoundsOverride > 0) {
-    //     adapter.setDerivationRounds(__derivationRoundsOverride);
-    // }
-    // console.log("iocane value", adapter.encrypt(data, password) as Promise<string | Buffer>);
-    // return adapter.encrypt(data, password) as Promise<string | Buffer>;
 
     return new Promise((resolve, reject) => {
         resolve(data);
