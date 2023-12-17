@@ -1,79 +1,66 @@
 import { createAdapter } from "iocane";
 import cryptoRandomString from "crypto-random-string";
 import { CRYPTO_PBKDF2_ROUNDS, CRYPTO_RANDOM_STRING_CHARS } from "../core/constants.js";
-
-const IPC = require("@achrinza/node-ipc").default;
+import ipc from "@achrinza/node-ipc";
 
 let __derivationRoundsOverride = CRYPTO_PBKDF2_ROUNDS;
+ipc.config.id = "heimdallserver";
+ipc.config.retry = 1500;
+ipc.config.silent = true;
+ipc.config.port = 8001;
 
-let encryptedData = "";
-let decryptedData = "";
+async function processData(channel, data): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error("Response timeout"));
+        }, 5000); // Set a timeout for the response (5 seconds in this example)
 
-IPC.config.id = "cryptoServer";
-IPC.config.retry = 1500;
+        ipc.connectTo("heimdallserver", () => {
+            console.log("Connected to the heimdall server");
 
-// Event handlers
-function handleMessage(data: any) {
-    console.log("Received message from client", data);
+            console.log("Sent data to be processed");
+            ipc.of.heimdallserver.emit(channel, data);
+
+            console.log("waiting on channel: ", channel + "-response");
+            ipc.of.heimdallserver.once(channel + "-response", (response) => {
+                clearTimeout(timeout); // Clear the timeout since we've received a response
+                console.log("Received response:", response);
+                resolve(response);
+            });
+
+            ipc.of.heimdallserver.on("error", (err) => {
+                clearTimeout(timeout); // Clear the timeout in case of an error
+                reject(err);
+            });
+        });
+    });
 }
-
-function handleEncrypt(data: any, message: string) {
-    console.log("Received encrypted data from client", message, data);
-    // Handle encrypted
-}
-
-function handleDecrypt(data: any, message: string) {
-    console.log("Received decrypted data from client", message, data);
-    // Handle decrypted
-}
-
-IPC.serve(function () {
-    IPC.server.on("message", handleMessage);
-    IPC.server.on("encrypt", handleEncrypt);
-    IPC.server.on("decrypt", handleDecrypt);
-});
-
-IPC.server.start();
 
 async function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
     console.log("----------------------------------------");
     console.log("In decryptData function in crypto.ts");
-    console.log("Received password is: " + password);
+    console.log("Data: " + data);
 
-    sendDatatoFrontend("decrypt", data);
+    const response = await processData("decrypt", data);
 
-    console.log("Decrypted data: " + decryptedData);
-    //console.log("Decrypted data - value: " + value);
+    console.log("Decrypted data: " + response);
     console.log("----------------------------------------");
-    //return value as Promise<string | Buffer>;
 
-    return Promise.resolve(data);
-}
-
-function sendDatatoFrontend(message: string, data: any) {
-    IPC.server.broadcast(message, data);
+    return Promise.resolve(response);
 }
 
 async function encryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
-    console.log("----------------------------------------");
-    console.log("In encryptData function in crypto.ts");
-    console.log("Received password is: " + password);
-
-    let value = sendDatatoFrontend("encrypt", data);
-    console.log("Encrypted data: " + encryptedData);
-    console.log("Encrypted data - value: " + value);
-    console.log("----------------------------------------");
-    //return value as Promise<string | Buffer>;
-
-    // const adapter = createAdapter();
-    // if (__derivationRoundsOverride > 0) {
-    //     adapter.setDerivationRounds(__derivationRoundsOverride);
-    // }
-    // console.log("iocane value", adapter.encrypt(data, password) as Promise<string | Buffer>);
-    // return adapter.encrypt(data, password) as Promise<string | Buffer>;
-
     return new Promise((resolve, reject) => {
-        resolve(data);
+        console.log("----------------------------------------");
+        console.log("In encryptData function in crypto.ts");
+        console.log("Data: " + data);
+
+        const response = processData("encrypt", data);
+
+        console.log("Encrypted Data: " + response);
+        console.log("----------------------------------------");
+
+        resolve(response);
     });
 }
 
