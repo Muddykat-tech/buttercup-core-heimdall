@@ -19,3 +19,8 @@ node_modules
 # Artifacts
 /dist
 /web
+.vs/buttercup-core-heimdall/FileContentIndex/2644e253-f55b-477b-b6f2-960b0cd71a4b.vsidx
+.vs/buttercup-core-heimdall/v17/.wsuo
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+buttercup-7.3.0.tgz
