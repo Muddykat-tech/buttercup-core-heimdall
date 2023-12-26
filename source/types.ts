@@ -59,6 +59,13 @@ export interface DatasourceConfigurationWebDAV extends DatasourceConfiguration {
     username: string;
 }
 
+export interface DatasourceConfigurationDB extends DatasourceConfiguration {
+    type: "db";
+    endpoint: string;
+    path: string;
+    username: string;
+}
+
 export interface DatasourceLoadedData {
     Format: any;
     history: History;
