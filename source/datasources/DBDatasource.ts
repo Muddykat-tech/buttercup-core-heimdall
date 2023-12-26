@@ -83,7 +83,8 @@ export default class DBDatasource extends TextDatasource {
             vaultID,
             `${attachmentID}.${ATTACHMENT_EXT}`
         );
-        return this.client.getFileContents(attachmentPath) as Promise<BufferLike>;
+        //return this.client.getFileContents(attachmentPath) as Promise<BufferLike>;
+        return null;
     }
 
     /**
