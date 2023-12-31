@@ -1,18 +1,17 @@
 import pathPosix from "path-posix";
 import { TextDatasource } from "./TextDatasource.js";
 import { fireInstantiationHandlers, registerDatasource } from "./register.js";
-import { getSharedAppEnv } from "../env/appEnv.js";
 import { Credentials } from "../credentials/Credentials.js";
 import { getCredentials } from "../credentials/channel.js";
 import { ATTACHMENT_EXT } from "../tools/attachments.js";
 import {
-    AttachmentDetails,
-    BufferLike,
     DatasourceConfigurationDB,
     DatasourceLoadedData,
     History,
-    VaultID
+    EncryptedContent
 } from "../types.js";
+import { ButtercupServerClient } from "buttercup-server-client";
+import { FileIdentifier } from "@buttercup/file-interface";
 
 const MAX_DATA_SIZE = 200 * 1024 * 1024; // 200 MB
 
@@ -22,8 +21,9 @@ const MAX_DATA_SIZE = 200 * 1024 * 1024; // 200 MB
  * @memberof module:Buttercup
  */
 export default class DBDatasource extends TextDatasource {
-    private _config: DatasourceConfigurationDB;
-    protected _path: string;
+    client: ButtercupServerClient;
+    config: DatasourceConfigurationDB;
+    path: string;
 
     /**
      * Constructor for the datasource
@@ -35,141 +35,53 @@ export default class DBDatasource extends TextDatasource {
         const { datasource: datasourceConfig } = credentialData as {
             datasource: DatasourceConfigurationDB;
         };
-        const { endpoint, path, username } = (this._config = datasourceConfig);
-        this._path = path;
-
+        const { endpoint, path, token } = (this.config = datasourceConfig);
+        this.path = path;
+        this.client = new ButtercupServerClient(path, token); // Give it the jwt here if need be?
         this.type = "db";
         fireInstantiationHandlers("db", this);
     }
-
-    /**
-     * The vault file's base directory
-     * @memberof DBDatasource
-     */
-    get baseDir() {
-        return pathPosix.dirname(this.path);
-    }
-
-    /**
-     * The remote archive path
-     * @memberof DBDatasource
-     */
-    get path() {
-        return this._path;
-    }
-
-    /**
-     * Ensure attachment paths exist
-     * @memberof DBDatasource
-     * @protected
-     */
-    async _ensureAttachmentsPaths(vaultID: VaultID): Promise<void> {
-        const attachmentsDir = pathPosix.join(this.baseDir, ".buttercup", vaultID);
-        //await this.client.createDirectory(attachmentsDir, { recursive: true });
-    }
-
-    /**
-     * Get encrypted attachment
-     * - Loads the attachment contents from a file into a buffer
-     * @param vaultID The ID of the vault
-     * @param attachmentID The ID of the attachment
-     * @memberof DBDatasource
-     */
-    async getAttachment(vaultID: VaultID, attachmentID: string): Promise<BufferLike> {
-        await this._ensureAttachmentsPaths(vaultID);
-        const attachmentPath = pathPosix.join(
-            this.baseDir,
-            ".buttercup",
-            vaultID,
-            `${attachmentID}.${ATTACHMENT_EXT}`
-        );
-        //return this.client.getFileContents(attachmentPath) as Promise<BufferLike>;
-        return null;
-    }
-
     /**
      * Get the datasource configuration
      * @memberof DBDatasource
      */
     getConfiguration(): DatasourceConfigurationDB {
-        return this._config;
+        return this.config;
     }
-
     /**
-     * Load archive history from the datasource
-     * @param credentials The credentials for archive decryption
-     * @returns A promise resolving archive history
+     * Load an archive from the datasource
+     * @param credentials The credentials for decryption
+     * @returns A promise that resolves archive history
      * @memberof DBDatasource
      */
     load(credentials: Credentials): Promise<DatasourceLoadedData> {
-        // return this.hasContent
-        //    ? super.load(credentials)
-        //    : this.client.getFileContents(this.path, { format: "text" }).then((content) => {
-        //          this.setContent(content as string);
-        //          return super.load(credentials);
-        //      });
-        return null;
+        if (this.hasContent) {
+            return super.load(credentials);
+        }
+        return this.client
+            .getFileContents({
+                identifier: this.path, // This isn't fully implemented, however it will be used to identify DIFFERENT Vault types, as of current implementation only a single vault is supported.
+                name: this.path
+            } as FileIdentifier)
+            .then((content) => {
+                this.setContent(content);
+                return super.load(credentials);
+            });
     }
 
     /**
-     * Put attachment data
-     * @param vaultID The ID of the vault
-     * @param attachmentID The ID of the attachment
-     * @param buffer The attachment data
-     * @param details The attachment details
+     * Save an archive using the datasource
+     * @param history The archive history to save
+     * @param credentials The credentials to save with
+     * @returns A promise that resolves when saving has completed
      * @memberof DBDatasource
      */
-    async putAttachment(
-        vaultID: VaultID,
-        attachmentID: string,
-        buffer: BufferLike,
-        details: AttachmentDetails
-    ): Promise<void> {
-        await this._ensureAttachmentsPaths(vaultID);
-        const attachmentPath = pathPosix.join(
-            this.baseDir,
-            ".buttercup",
-            vaultID,
-            `${attachmentID}.${ATTACHMENT_EXT}`
-        );
-        //await this.client.putFileContents(attachmentPath, buffer);
-    }
-
-    /**
-     * Remove an attachment
-     * @param vaultID The ID of the vault
-     * @param attachmentID The ID of the attachment
-     * @memberof DBDatasource
-     */
-    async removeAttachment(vaultID: VaultID, attachmentID: string): Promise<void> {
-        await this._ensureAttachmentsPaths(vaultID);
-        const attachmentPath = pathPosix.join(
-            this.baseDir,
-            ".buttercup",
-            vaultID,
-            `${attachmentID}.${ATTACHMENT_EXT}`
-        );
-        //await this.client.deleteFile(attachmentPath);
-    }
-
-    /**
-     * Save archive contents to the WebDAV service
-     * @param history Archive history
-     * @param credentials The credentials for encryption
-     * @returns A promise resolving when the save is complete
-     * @memberof DBDatasource
-     */
-    async save(history: History, credentials: Credentials): Promise<any> {
-        const content = await super.save(history, credentials);
-        //await this.client.putFileContents(this.path, content);
-    }
-
-    /**
-     * Whether or not the datasource supports attachments
-     * @memberof DBDatasource
-     */
-    supportsAttachments(): boolean {
-        return true;
+    save(history: History, credentials: Credentials): Promise<EncryptedContent> {
+        return super
+            .save(history, credentials)
+            .then((encryptedContent: EncryptedContent) =>
+                this.client.putFileContents(this.path, encryptedContent)
+            );
     }
 
     /**

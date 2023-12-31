@@ -63,7 +63,7 @@ export interface DatasourceConfigurationDB extends DatasourceConfiguration {
     type: "db";
     endpoint: string;
     path: string;
-    username: string;
+    token: string;
 }
 
 export interface DatasourceLoadedData {
