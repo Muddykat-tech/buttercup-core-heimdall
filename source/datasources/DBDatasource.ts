@@ -12,6 +12,7 @@ import {
 } from "../types.js";
 import { ButtercupServerClient } from "buttercup-server-client";
 import { FileIdentifier } from "@buttercup/file-interface";
+import { PathIdentifier } from "buttercup-server-client/dist/types.js";
 
 const MAX_DATA_SIZE = 200 * 1024 * 1024; // 200 MB
 
@@ -23,7 +24,7 @@ const MAX_DATA_SIZE = 200 * 1024 * 1024; // 200 MB
 export default class DBDatasource extends TextDatasource {
     client: ButtercupServerClient;
     config: DatasourceConfigurationDB;
-    path: string;
+    path: PathIdentifier;
 
     /**
      * Constructor for the datasource
@@ -36,7 +37,7 @@ export default class DBDatasource extends TextDatasource {
             datasource: DatasourceConfigurationDB;
         };
         const { endpoint, path, token } = (this.config = datasourceConfig);
-        this.path = path;
+        this.path = { identifier: endpoint, name: path };
         this.client = new ButtercupServerClient(path, token); // Give it the jwt here if need be?
         this.type = "db";
         fireInstantiationHandlers("db", this);
@@ -58,15 +59,10 @@ export default class DBDatasource extends TextDatasource {
         if (this.hasContent) {
             return super.load(credentials);
         }
-        return this.client
-            .getFileContents({
-                identifier: this.path, // This isn't fully implemented, however it will be used to identify DIFFERENT Vault types, as of current implementation only a single vault is supported.
-                name: this.path
-            } as FileIdentifier)
-            .then((content) => {
-                this.setContent(content);
-                return super.load(credentials);
-            });
+        return this.client.getFileContents(this.path).then((content) => {
+            this.setContent(content);
+            return super.load(credentials);
+        });
     }
 
     /**
@@ -79,8 +75,8 @@ export default class DBDatasource extends TextDatasource {
     save(history: History, credentials: Credentials): Promise<EncryptedContent> {
         return super
             .save(history, credentials)
-            .then((encryptedContent: EncryptedContent) =>
-                this.client.putFileContents(this.path, encryptedContent)
+            .then((encryptedContent) =>
+                this.client.putFileContents(this.path.name, encryptedContent)
             );
     }
 
@@ -91,7 +87,7 @@ export default class DBDatasource extends TextDatasource {
      * @memberof DBDatasource
      */
     supportsRemoteBypass(): boolean {
-        return true;
+        return false;
     }
 }
 

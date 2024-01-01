@@ -19,6 +19,7 @@ const __postHandlers = [];
  */
 export function credentialsToDatasource(credentials: Credentials): TextDatasource {
     const { datasource } = getCredentials(credentials.id).data;
+    console.log("Data Check Passed!");
     if (!datasource) {
         throw new Error("No datasource configuration in credentials");
     }
@@ -60,18 +61,28 @@ export function prepareDatasourceCredentials(
     credentials: Credentials,
     typeOverride: string = null
 ): Credentials {
+    console.log("Data Check prepare", 1);
     const {
         data: { datasource },
         masterPassword
     } = getCredentials(credentials.id);
+
+    console.log("Data Check prepare", 2);
     const datasourceType = typeOverride || datasource.type || "";
+    console.log("Data Check prepare", 3);
     const { open = false } = __datasourceFlags[datasourceType] || {};
+    console.log("Data Check prepare", credentials);
+    console.log("Source Type?", datasourceType);
     if (!open) {
         return credentials;
     }
+    console.log("Data Check prepare", 5);
     const newCreds = Credentials.fromCredentials(credentials, masterPassword);
+    console.log("Data Check prepare", 6);
     const newCredPayload = getCredentials(newCreds.id);
+    console.log("Data Check prepare", 7);
     newCredPayload.open = true;
+    console.log("Data Check prepare", 8);
     return newCreds;
 }
 
