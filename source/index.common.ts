@@ -34,6 +34,7 @@ export { default as WebDAVDatasource } from "./datasources/WebDAVDatasource.js";
 export { default as DropboxDatasource } from "./datasources/DropboxDatasource.js";
 export { default as GoogleDriveDatasource } from "./datasources/GoogleDriveDatasource.js";
 export { default as DatasourceAuthManager } from "./datasources/DatasourceAuthManager.js";
+export { default as DBDatasource } from "./datasources/DBDatasource.js";
 export { registerDatasource } from "./datasources/register.js";
 
 export {
