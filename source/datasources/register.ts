@@ -19,7 +19,7 @@ const __postHandlers = [];
  */
 export function credentialsToDatasource(credentials: Credentials): TextDatasource {
     const { datasource } = getCredentials(credentials.id).data;
-    console.log("Data Check Passed!");
+    console.log("Data Check Passed!", datasource);
     if (!datasource) {
         throw new Error("No datasource configuration in credentials");
     }

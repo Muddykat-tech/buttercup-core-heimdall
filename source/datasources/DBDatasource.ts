@@ -87,7 +87,7 @@ export default class DBDatasource extends TextDatasource {
      * @memberof DBDatasource
      */
     supportsRemoteBypass(): boolean {
-        return false;
+        return true;
     }
 }
 

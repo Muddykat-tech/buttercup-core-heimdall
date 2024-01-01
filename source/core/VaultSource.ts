@@ -663,7 +663,7 @@ export class VaultSource extends EventEmitter {
             const credentials: Credentials = (this._credentials =
                 await processDehydratedCredentials(this._credentials as string, masterPassword));
             // Initialise datasource
-            console.log("Check Passed? ", JSON.stringify(credentials));
+            console.log("Check Passed? ", JSON.stringify(this._credentials));
             console.log("Check Passed2? ", masterPassword);
             console.log("Check 3", offlineContent);
 
@@ -702,7 +702,9 @@ export class VaultSource extends EventEmitter {
             // Perform pre-save or load
             if (initialiseRemote) {
                 const defaultVault = Vault.createWithDefaults();
+                console.log("Check Passed", 4.1);
                 await datasource.save(defaultVault.format.history, credentials);
+                console.log("Check Passed", 4.2);
                 this._vault = defaultVault;
             } else {
                 const { Format, history } = await datasource.load(credentials);
