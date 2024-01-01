@@ -657,19 +657,29 @@ export class VaultSource extends EventEmitter {
         const originalCredentials = this._credentials;
         this._status = VaultSource.STATUS_PENDING;
         await this._enqueueStateChange(async () => {
+            console.log("Check Passed ", 1);
             // Get offline content if available and requested
             const offlineContent = loadOfflineCopy ? await this.getOfflineContent() : null;
             const credentials: Credentials = (this._credentials =
                 await processDehydratedCredentials(this._credentials as string, masterPassword));
             // Initialise datasource
+            console.log("Check Passed? ", JSON.stringify(credentials));
+            console.log("Check Passed2? ", masterPassword);
+            console.log("Check 3", offlineContent);
+
             const datasource = (this._datasource = credentialsToDatasource(
                 Credentials.fromCredentials(credentials, masterPassword)
             ));
+
+            console.log("Check Passed ", "2.5");
+
             datasource.sourceID = this.id;
             if (typeof offlineContent === "string") {
                 console.log("Offline content: " + offlineContent);
                 datasource.setContent(offlineContent);
             }
+
+            console.log("Check Passed ", 3);
 
             // Listen for datasource updates
             datasource.on("updated", () => {
@@ -687,6 +697,8 @@ export class VaultSource extends EventEmitter {
                         );
                     });
             });
+
+            console.log("Check Passed ", 4);
             // Perform pre-save or load
             if (initialiseRemote) {
                 const defaultVault = Vault.createWithDefaults();
@@ -696,12 +708,16 @@ export class VaultSource extends EventEmitter {
                 const { Format, history } = await datasource.load(credentials);
                 this._vault = Vault.createFromHistory(history, Format);
             }
+
+            console.log("Check Passed ", 5);
             // Optimise storage
             try {
                 this._vault.format.optimise();
             } catch (err) {
                 throw new Layerr(err, "Failed optimising vault format");
             }
+
+            console.log("Check Passed ", 6);
             // Handle offline state
             if (storeOfflineCopy) {
                 // Store an offline copy for later use
@@ -711,13 +727,17 @@ export class VaultSource extends EventEmitter {
                     datasource._content
                 );
             }
+
+            console.log("Check Passed ", 7);
             if (loadOfflineCopy) {
                 // Flag the format as read-only
                 this.vault.format._readOnly = true;
             }
+            console.log("Check Passed ", 8);
             // Configure source status
             this._status = VaultSource.STATUS_UNLOCKED;
             this._attachmentManager = new AttachmentManager(this);
+            console.log("Check Passed ", 9);
             this.emit("unlocked");
         }).catch((err) => {
             this._status = VaultSource.STATUS_LOCKED;

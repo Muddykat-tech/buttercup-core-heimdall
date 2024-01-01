@@ -7,9 +7,6 @@ const UINT16_MAX = 65535;
 let __derivationRoundsOverride = CRYPTO_PBKDF2_ROUNDS;
 
 function decryptData(data: string | ArrayBuffer, password): Promise<string | ArrayBuffer> {
-    console.log("Decryption Function called from crypto.ts!");
-    console.log("Received password in decryptData:" + password);
-    // throw new Layerr("Received password in decryptData:" + password);
     return createAdapter().decrypt(data, "password");
 }
 
@@ -18,9 +15,6 @@ function encryptData(data: string | ArrayBuffer, password): Promise<string | Arr
     if (__derivationRoundsOverride > 0) {
         adapter.setDerivationRounds(__derivationRoundsOverride);
     }
-    // throw new Layerr("Received password in encryptData:" + password);
-    console.log("Received password in encryptData:" + password);
-    console.log("Encryption function called from crypto.ts!");
     return adapter.encrypt(data, "password");
 }
 
