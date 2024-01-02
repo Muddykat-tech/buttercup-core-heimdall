@@ -19,6 +19,7 @@ import { convertFormatAVault } from "../io/formatB/conversion.js";
 import { VaultFormatB } from "../index.common.js";
 import { VaultFormatID, VaultLiveSnapshot, VaultSourceID, VaultSourceStatus } from "../types.js";
 import { getFormatForID } from "../io/formatRouter.js";
+import { error } from "console";
 
 interface StateChangeEnqueuedFunction {
     (): void | Promise<any>;
@@ -571,17 +572,22 @@ export class VaultSource extends EventEmitter {
      * @memberof VaultSource
      */
     async save(config: VaultSourceSaveOptions = {}) {
+        console.log("Vaultsource save check 1");
         const { storeOfflineCopy = true } = config;
+        console.log("Vaultsource save check 2");
         await this._enqueueStateChange(async () => {
-            if (await this.localDiffersFromRemote()) {
-                await this.mergeFromRemote();
-            }
+            console.log("Vaultsource save check 3");
+            // if (await this.localDiffersFromRemote()) {
+            //     await this.mergeFromRemote();
+            // }
+            console.log("Vaultsource save check 4");
             // Capture encrypted content
             let encryptedContent: string = null;
             const encryptedCallback = ({ content }) => {
                 encryptedContent = content;
             };
             this._datasource.once("encryptedContent", encryptedCallback);
+            console.log("Vaultsource save check 5");
             // Save
             try {
                 await this._datasource.save(
@@ -595,19 +601,24 @@ export class VaultSource extends EventEmitter {
                 this._datasource.off("encryptedContent", encryptedCallback);
                 throw err;
             }
+            console.log("Vaultsource save check 6");
             // Clear state
             this._vault.format.dirty = false;
             // Handle offline state
             if (storeOfflineCopy && encryptedContent) {
+                console.log("Vaultsource save check 6.1");
                 // Store an offline copy for later use
                 await storeSourceOfflineCopy(
                     this._vaultManager._cacheStorage,
                     this.id,
                     encryptedContent
                 );
+                console.log("Vaultsource save check 6.2");
             }
+            console.log("Vaultsource save check 7");
             // Misc
             await this._updateInsights();
+            console.log("Vaultsource save check 8");
         }, /* stack */ "saving");
         this.emit("updated");
     }
@@ -700,6 +711,7 @@ export class VaultSource extends EventEmitter {
 
             console.log("Check Passed ", 4);
             // Perform pre-save or load
+            // if (initialiseRemote) {
             if (initialiseRemote) {
                 const defaultVault = Vault.createWithDefaults();
                 console.log("Check Passed", 4.1);
@@ -708,7 +720,9 @@ export class VaultSource extends EventEmitter {
                 this._vault = defaultVault;
             } else {
                 const { Format, history } = await datasource.load(credentials);
+                console.log("Check Passed", 4.3);
                 this._vault = Vault.createFromHistory(history, Format);
+                console.log("Check Passed", 4.4);
             }
 
             console.log("Check Passed ", 5);
@@ -758,6 +772,7 @@ export class VaultSource extends EventEmitter {
      * @memberof VaultSource
      */
     async update({ skipDiff = false } = {}) {
+        console.log("Inside VaultSource.ts update()");
         const didUpdate = await this._enqueueStateChange(
             () =>
                 (skipDiff ? Promise.resolve(false) : this.localDiffersFromRemote()).then(

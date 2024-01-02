@@ -89,6 +89,7 @@
     "@buttercup/googledrive-client": "^2.3.0",
     "@types/node-ipc": "^9.2.3",
     "buttercup": "file:buttercup-7.3.0.tgz",
+    "buttercup-server-client": "file:../buttercup-server/buttercup-server-client/buttercup-server-client-1.0.0.tgz",
     "crypto-random-string": "^5.0.0",
     "eventemitter3": "^5.0.0",
     "fast-levenshtein": "^3.0.0",

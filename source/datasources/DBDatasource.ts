@@ -38,7 +38,7 @@ export default class DBDatasource extends TextDatasource {
         };
         const { endpoint, path, token } = (this.config = datasourceConfig);
         this.path = { identifier: endpoint, name: path };
-        this.client = new ButtercupServerClient(path, token); // Give it the jwt here if need be?
+        this.client = new ButtercupServerClient(this.path, token); // Give it the jwt here if need be?
         this.type = "db";
         fireInstantiationHandlers("db", this);
     }
@@ -72,12 +72,12 @@ export default class DBDatasource extends TextDatasource {
      * @returns A promise that resolves when saving has completed
      * @memberof DBDatasource
      */
-    save(history: History, credentials: Credentials): Promise<EncryptedContent> {
-        return super
-            .save(history, credentials)
-            .then((encryptedContent) =>
-                this.client.putFileContents(this.path.name, encryptedContent)
-            );
+    async save(history: History, credentials: Credentials): Promise<EncryptedContent> {
+        console.log("DBDatasource check 1");
+        return super.save(history, credentials).then((encryptedContent) => {
+            console.log("DBDatasource check 2");
+            return this.client.putFileContents(this.path.name, encryptedContent);
+        });
     }
 
     /**

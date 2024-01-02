@@ -192,14 +192,20 @@ export class TextDatasource extends EventEmitter {
      * @memberof TextDatasource
      */
     async save(history: History, credentials: Credentials): Promise<EncryptedContent> {
+        console.log("TextDatasource save check 1");
         if (credentialsAllowsPurpose(credentials.id, Credentials.PURPOSE_ENCRYPT_VAULT) !== true) {
             throw new Error("Unable to save: Provided credentials don't allow vault encryption");
         }
+        console.log("TextDatasource save check 2");
+
         if (!history.format) {
             throw new Error("Unable to save: Provided history does not contain a format");
         }
+        console.log("TextDatasource save check 3");
         const content = await getFormatForID(history.format).encodeRaw(history, credentials);
+        console.log("TextDatasource save check 4");
         this.emit("encryptedContent", { content });
+        console.log("TextDatasource save check 5");
         return content;
     }
 
