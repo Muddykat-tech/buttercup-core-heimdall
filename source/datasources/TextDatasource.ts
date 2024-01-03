@@ -147,14 +147,22 @@ export class TextDatasource extends EventEmitter {
         if (!this._content) {
             return Promise.reject(new Error("Failed to load vault: Content is empty"));
         }
+        console.log("TextDatasource load (): check 1 pass");
         if (credentialsAllowsPurpose(credentials.id, Credentials.PURPOSE_DECRYPT_VAULT) !== true) {
             return Promise.reject(new Error("Provided credentials don't allow vault decryption"));
         }
+        console.log("TextDatasource load (): check 2 pass");
+        console.log("TextDatasource load ():" + this._content);
         const Format = detectFormat(this._content);
-        return Format.parseEncrypted(this._content, credentials).then((history: History) => ({
-            Format,
-            history
-        }));
+        console.log("TextDatasource load () check 3 pass:");
+
+        return Format.parseEncrypted(this._content, credentials).then((history: History) => {
+            console.log("TextDatasource load () check 4 pass:" + history);
+            return {
+                Format,
+                history
+            };
+        });
     }
 
     /**

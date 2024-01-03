@@ -151,12 +151,14 @@ export class VaultFormatA extends VaultFormat {
 
     static parseEncrypted(encryptedContent: string, credentials: Credentials): Promise<History> {
         const decompress = getSharedAppEnv().getProperty("compression/v1/decompressText");
+        console.log("parseEncrypted A check 1 pass");
         const decrypt = getSharedAppEnv().getProperty("crypto/v1/decryptText");
+        console.log("parseEncrypted A check 2 pass");
         const { masterPassword } = getCredentials(credentials.id);
         return Promise.resolve()
             .then(() => {
                 if (!hasValidSignature(encryptedContent)) {
-                    throw new Error("No valid signature in vault");
+                    throw new Error("No valid signature in vault A:" + encryptedContent);
                 }
                 return stripSignature(encryptedContent);
             })

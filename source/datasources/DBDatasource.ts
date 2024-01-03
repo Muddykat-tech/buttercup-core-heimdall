@@ -60,6 +60,7 @@ export default class DBDatasource extends TextDatasource {
             return super.load(credentials);
         }
         return this.client.getFileContents(this.path).then((content) => {
+            console.log("DBDatasource load function:" + content);
             this.setContent(content);
             return super.load(credentials);
         });

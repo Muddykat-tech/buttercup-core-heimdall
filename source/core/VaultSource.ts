@@ -577,9 +577,9 @@ export class VaultSource extends EventEmitter {
         console.log("Vaultsource save check 2");
         await this._enqueueStateChange(async () => {
             console.log("Vaultsource save check 3");
-            // if (await this.localDiffersFromRemote()) {
-            //     await this.mergeFromRemote();
-            // }
+            if (await this.localDiffersFromRemote()) {
+                await this.mergeFromRemote();
+            }
             console.log("Vaultsource save check 4");
             // Capture encrypted content
             let encryptedContent: string = null;
@@ -711,7 +711,6 @@ export class VaultSource extends EventEmitter {
 
             console.log("Check Passed ", 4);
             // Perform pre-save or load
-            // if (initialiseRemote) {
             if (initialiseRemote) {
                 const defaultVault = Vault.createWithDefaults();
                 console.log("Check Passed", 4.1);
