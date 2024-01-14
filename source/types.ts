@@ -17,7 +17,7 @@ export interface CredentialsData {
 
 export interface CredentialsPayload {
     data: CredentialsData;
-    masterPassword: string | null;
+    masterPassword: string | Object | null;
     purposes: Array<string>;
     open: boolean;
 }

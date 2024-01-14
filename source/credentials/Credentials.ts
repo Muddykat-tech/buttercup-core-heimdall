@@ -80,7 +80,7 @@ export class Credentials {
      * @throws {Error} Throws if master password does not match
      *  original
      */
-    static fromCredentials(credentials: Credentials, masterPassword: string): Credentials {
+    static fromCredentials(credentials: Credentials, masterPassword: string | Object): Credentials {
         if (!masterPassword) {
             throw new Error("Master password is required for credentials cloning");
         }
@@ -102,7 +102,7 @@ export class Credentials {
      */
     static fromDatasource(
         datasourceConfig: DatasourceConfiguration,
-        masterPassword: string = null
+        masterPassword: string | Object = null
     ): Credentials {
         return new Credentials(
             {
@@ -115,7 +115,7 @@ export class Credentials {
     /**
      * Create a new Credentials instance from a password
      * - uses the single password value as the master password stored
-     * alongside the original password if no master password is
+     * alongside the original password if no mas ter password is
      * provided. The master password is used when generating secure
      * strings.
      * @param password The password to store
@@ -123,7 +123,10 @@ export class Credentials {
      *  to store alongside the credentials. Used to create secure
      *  strings.
      */
-    static fromPassword(password: string, masterPassword: string = null): Credentials {
+    static fromPassword(
+        password: string | Object,
+        masterPassword: string | Object = null
+    ): Credentials {
         const masterPass = masterPassword || password;
         return new Credentials({ password }, masterPass);
     }
@@ -134,7 +137,10 @@ export class Credentials {
      * @param masterPassword The password for decryption
      * @returns A promise that resolves with the new instance
      */
-    static fromSecureString(content: string, masterPassword: string): Promise<Credentials> {
+    static fromSecureString(
+        content: string,
+        masterPassword: string | Object
+    ): Promise<Credentials> {
         const decrypt = getSharedAppEnv().getProperty("crypto/v1/decryptText");
         return decrypt(unsignEncryptedContent(content), masterPassword)
             .then((decryptedContent: string) => JSON.parse(decryptedContent))
@@ -180,7 +186,7 @@ export class Credentials {
      * @param masterPassword Optional master password to store with
      *  the credentials data, which is used for generating secure strings.
      */
-    constructor(obj: CredentialsData = {}, masterPassword: string = null) {
+    constructor(obj: CredentialsData = {}, masterPassword: string | Object | null) {
         const id = generateUUID();
         Object.defineProperty(this, "id", {
             writable: false,
@@ -280,10 +286,14 @@ export class Credentials {
         }
         const encrypt = getSharedAppEnv().getProperty("crypto/v1/encryptText");
         const { data, masterPassword } = getCredentials(this.id);
+
+        // Checks if the masterpassword is valid, if it has a 'sourcetype' property this is the terrible way I implemented encryption switching ~Muddykat
         if (typeof masterPassword !== "string") {
-            throw new Error(
-                "Cannot convert Credentials to string: master password was not set or is invalid"
-            );
+            if (!masterPassword.hasOwnProperty("sourceType")) {
+                throw new Error(
+                    "Cannot convert Credentials to string: master password was not set or is invalid"
+                );
+            }
         }
 
         const payload = getCredentials(this.id);

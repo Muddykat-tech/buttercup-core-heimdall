@@ -6,66 +6,6 @@ const IPC = require("@achrinza/node-ipc").default;
 
 let __derivationRoundsOverride = CRYPTO_PBKDF2_ROUNDS;
 
-let encryptedData = "";
-let decryptedData = "";
-
-IPC.config.id = "cryptoServer";
-IPC.config.retry = 1500;
-
-// Event handlers
-function handleMessage(data: any) {
-    console.log("Received message from client", data);
-}
-
-function handleEncrypt(data: any, message: string) {
-    console.log("Received encrypted data from client", message, data);
-    // Handle encrypted
-}
-
-function handleDecrypt(data: any, message: string) {
-    console.log("Received decrypted data from client", message, data);
-    // Handle decrypted
-}
-
-IPC.serve(function () {
-    IPC.server.on("message", handleMessage);
-    IPC.server.on("encrypt", handleEncrypt);
-    IPC.server.on("decrypt", handleDecrypt);
-});
-
-IPC.server.start();
-
-function decryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
-    console.log("----------------------------------------");
-    console.log("In decryptData function in crypto.ts");
-
-    sendDatatoFrontend("decrypt", data);
-
-    console.log("Decrypted data: " + data);
-    console.log("----------------------------------------");
-
-    return new Promise((resolve, reject) => {
-        resolve(data);
-    });
-}
-
-function sendDatatoFrontend(message: string, data: any) {
-    IPC.server.broadcast(message, data);
-}
-
-function encryptData(data: string | Buffer, password: string): Promise<string | Buffer> {
-    console.log("----------------------------------------");
-    console.log("In encryptData function in crypto.ts");
-
-    sendDatatoFrontend("encrypt", data);
-    console.log("Encrypted data: " + data);
-    console.log("----------------------------------------");
-
-    return new Promise((resolve, reject) => {
-        resolve(data);
-    });
-}
-
 export function getCryptoResources() {
     return {
         "crypto/v2/decryptBuffer": decryptData,
@@ -77,13 +17,70 @@ export function getCryptoResources() {
     };
 }
 
-async function randomString(length: number): Promise<string> {
+async function randomString(length) {
     return cryptoRandomString({
         length,
         characters: CRYPTO_RANDOM_STRING_CHARS
     });
 }
 
-function setDerivationRounds(rounds: number = null) {
+function setDerivationRounds(rounds = null) {
     __derivationRoundsOverride = !rounds ? CRYPTO_PBKDF2_ROUNDS : rounds;
+}
+
+IPC.config.id = "cryptoServer";
+IPC.config.retry = 1500;
+
+// Event handlers
+function handleMessage(data) {
+    //console.log("Received message from client", data);
+}
+
+function handleEncrypt(data, message) {
+    //console.log("Received encrypted data from client", message, data);
+}
+function handleDecrypt(data, message) {
+    //console.log("Received decrypted data from client", message, data);
+}
+
+IPC.serve(function () {
+    IPC.server.on("message", handleMessage);
+    IPC.server.on("encrypt", handleEncrypt);
+    IPC.server.on("decrypt", handleDecrypt);
+});
+
+IPC.server.start();
+
+function sendDatatoFrontend(message, data) {
+    IPC.server.broadcast(message, data);
+}
+
+function decryptDataTide(data) {
+    sendDatatoFrontend("decrypt", data);
+    console.log("Decrypting with Tide");
+    return new Promise((resolve, reject) => {
+        resolve(data);
+    });
+}
+
+function encryptDataTide(data) {
+    sendDatatoFrontend("encrypt", data);
+    console.log("Encrypting with Tide");
+    return new Promise((resolve, reject) => {
+        resolve(data);
+    });
+}
+
+function decryptData(data, password) {
+    if (typeof password !== "string") return decryptDataTide(data);
+    return createAdapter().decrypt(data, password);
+}
+
+function encryptData(data, password) {
+    if (typeof password !== "string") return encryptDataTide(data);
+    const adapter = createAdapter();
+    if (__derivationRoundsOverride > 0) {
+        adapter.setDerivationRounds(__derivationRoundsOverride);
+    }
+    return adapter.encrypt(data, password);
 }

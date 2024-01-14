@@ -52,7 +52,7 @@ const DEFAULT_ORDER = 1000;
 
 function processDehydratedCredentials(
     credentialsString: string,
-    masterPassword: string
+    masterPassword: string | Object
 ): Promise<Credentials> {
     if (/^v1\n/.test(credentialsString)) {
         const [, sourceCredStr] = credentialsString.split("\n");
@@ -663,14 +663,16 @@ export class VaultSource extends EventEmitter {
                 `Failed unlocking source: Source in invalid state (${this.status}): ${this.id}`
             );
         }
+
         const { masterPassword } = getCredentials(vaultCredentials.id);
-        //const masterPassword = "password";
+
         const originalCredentials = this._credentials;
         this._status = VaultSource.STATUS_PENDING;
         await this._enqueueStateChange(async () => {
             console.log("Check Passed ", 1);
             // Get offline content if available and requested
             const offlineContent = loadOfflineCopy ? await this.getOfflineContent() : null;
+            console.log("Check Passed ", 1.5);
             const credentials: Credentials = (this._credentials =
                 await processDehydratedCredentials(this._credentials as string, masterPassword));
             // Initialise datasource

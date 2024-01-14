@@ -7,7 +7,7 @@ const UINT16_MAX = 65535;
 let __derivationRoundsOverride = CRYPTO_PBKDF2_ROUNDS;
 
 function decryptData(data: string | ArrayBuffer, password): Promise<string | ArrayBuffer> {
-    return createAdapter().decrypt(data, "password");
+    return createAdapter().decrypt(data, password);
 }
 
 function encryptData(data: string | ArrayBuffer, password): Promise<string | ArrayBuffer> {
@@ -15,7 +15,7 @@ function encryptData(data: string | ArrayBuffer, password): Promise<string | Arr
     if (__derivationRoundsOverride > 0) {
         adapter.setDerivationRounds(__derivationRoundsOverride);
     }
-    return adapter.encrypt(data, "password");
+    return adapter.encrypt(data, password);
 }
 
 export function getCryptoResources() {
