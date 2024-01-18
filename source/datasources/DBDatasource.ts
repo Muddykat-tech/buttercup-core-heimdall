@@ -10,9 +10,9 @@ import {
     History,
     EncryptedContent
 } from "../types.js";
-import { ButtercupServerClient } from "buttercup-server-client";
-import { FileIdentifier } from "@buttercup/file-interface";
-import { PathIdentifier } from "buttercup-server-client/dist/types.js";
+import { ButtercupServerClient } from "@amalsaju/buttercup-server-client";
+import { FileIdentifier } from "@muddykat-tech/file-interface";
+import { PathIdentifier } from "@amalsaju/buttercup-server-client/dist/types.js";
 
 const MAX_DATA_SIZE = 200 * 1024 * 1024; // 200 MB
 
